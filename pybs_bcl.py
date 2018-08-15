@@ -7,6 +7,9 @@ from BaseSpacePy.api.BaseSpaceAPI import BaseSpaceAPI
 from BaseSpacePy.model.QueryParameters import QueryParameters as qp
 
 
+__author__ = "Jialei Duan"
+
+
 def main():
     parser = argparse.ArgumentParser(description='')
 
