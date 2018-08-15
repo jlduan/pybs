@@ -32,11 +32,11 @@ def main():
                         The default is current directory')
     parser.add_argument('-offset', dest='offset', required=False,
                         type=int,
-                        default='0',
+                        default=0,
                         help='specify the offset')
     parser.add_argument('-n', '--number', dest='number', required=False,
                         type=int,
-                        default='10',
+                        default=10,
                         help='specify the number of iterms to retrieve')
 
     args = parser.parse_args()
