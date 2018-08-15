@@ -28,16 +28,18 @@ def main():
     parser.add_argument('-d', '--directory', dest='directory', required=False,
                         type=str,
                         default='./',
-                        help='specify download file directory. \
-                        The default is current directory')
-    parser.add_argument('-offset', dest='offset', required=False,
+                        help='specify download directory. \
+                        The default is the current directory')
+    parser.add_argument('--offset', dest='offset', required=False,
                         type=int,
                         default=0,
-                        help='specify the offset')
-    parser.add_argument('-n', '--number', dest='number', required=False,
+                        help='specify the starting offset to read. \
+                              The default is 0')
+    parser.add_argument('-n', '--num_items', dest='num_items', required=False,
                         type=int,
                         default=10,
-                        help='specify the number of iterms to retrieve')
+                        help='specify the maximum number of items to return. \
+                              The default is 10')
 
     args = parser.parse_args()
 
@@ -47,7 +49,7 @@ def main():
     run_id = args.run
     download_directory = args.directory
 
-    num_iterms = args.number
+    num_items = args.num_items
     offset = args.offset
 
     BaseSpaceUrl = 'https://api.basespace.illumina.com/'
@@ -65,8 +67,8 @@ def main():
           ' ' * 4,
           str(user), sep='', file=sys.stderr)
 
-    runs = user.getRuns(my_bs_api, queryPars=qp({'Limit': num_iterms}))
-    print('The project(s) for this user is/are:\n',
+    runs = user.getRuns(my_bs_api, queryPars=qp({'Limit' : num_items}))
+    print('The run(s) for this user is/are:\n',
           ' ' * 4,
           runs, sep='', file=sys.stderr)
 
@@ -74,22 +76,22 @@ def main():
         run = runs[[index for index, value
                     in enumerate(runs) if str(value) == run_id][0]]
 
-        print('The total size of this run is (Gb):\n',
+        print('The total size of this run ({}) is (Gb):\n'.format(str(run)),
               ' ' * 4,
               run.TotalSize / 1000000000,
               sep='', file=sys.stderr)
-        print('The file offset is:\n',
+        print('The offset is set to:\n',
               ' ' * 4,
               offset,
               sep='', file=sys.stderr)
-        print('The number of iterms is:\n',
+        print('The number of items to return is set to:\n',
               ' ' * 4,
-              num_iterms,
+              num_items,
               sep='', file=sys.stderr)
         print('Downloading file:', sep='', file=sys.stderr)
 
         for f in run.getFiles(my_bs_api,
-                              queryPars=qp({'Limit': num_iterms})):
+                              queryPars=qp({'Limit' : num_items})):
             print(' ' * 4,
                   str(f),
                   sep='', file=sys.stderr)
