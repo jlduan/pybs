@@ -91,7 +91,8 @@ def main():
         print('Downloading file:', sep='', file=sys.stderr)
 
         for f in run.getFiles(my_bs_api,
-                              queryPars=qp({'Limit' : num_items})):
+                              queryPars=qp({'Limit' : num_items,
+                                            'Offset' : offset})):
             print(' ' * 4,
                   str(f),
                   sep='', file=sys.stderr)
