@@ -5,9 +5,19 @@ import sys
 import argparse
 from BaseSpacePy.api.BaseSpaceAPI import BaseSpaceAPI
 from BaseSpacePy.model.QueryParameters import QueryParameters as qp
+import hashlib
+import os.path
 
 
 __author__ = "Jialei Duan"
+
+
+def md5_hash(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, 'rb') as f:
+        for chunk in iter(lambda: f.read(10240), b''):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 
 def main():
@@ -46,7 +56,7 @@ def main():
     client_key = args.key
     client_secret = args.secret
     client_token = args.token
-    run_id = args.run
+    run_name = args.run
     download_directory = args.directory
 
     num_items = args.num_items
@@ -63,40 +73,62 @@ def main():
 
 
     user = my_bs_api.getUserById('current')
-    print('The current user is:\n',
-          ' ' * 4,
-          str(user), sep='', file=sys.stderr)
+    print('User: {}'.format(str(user)),
+          sep='', file=sys.stderr)
 
     runs = user.getRuns(my_bs_api, queryPars=qp({'Limit' : num_items}))
-    print('The run(s) for this user is/are:\n',
-          ' ' * 4,
-          runs, sep='', file=sys.stderr)
+    print('Runs: {}'.format(runs), sep='', file=sys.stderr)
 
-    if run_id:
+    if run_name:
         run = runs[[index for index, value
-                    in enumerate(runs) if str(value) == run_id][0]]
+                    in enumerate(runs) if value.Name == run_name][0]]
 
-        print('The total size of this run ({}) is (Gb):\n'.format(str(run)),
-              ' ' * 4,
-              run.TotalSize / 1000000000,
+        print('Total size ({}): {} GB'.format(run.Name,
+                                              run.TotalSize / 1000000000),
               sep='', file=sys.stderr)
-        print('The offset is set to:\n',
-              ' ' * 4,
-              offset,
+        print('Offset: {}'.format(offset),
               sep='', file=sys.stderr)
-        print('The number of items to return is set to:\n',
-              ' ' * 4,
-              num_items,
+        print('Number of items to return: {}'.format(num_items),
               sep='', file=sys.stderr)
-        print('Downloading file:', sep='', file=sys.stderr)
 
         for f in run.getFiles(my_bs_api,
                               queryPars=qp({'Limit' : num_items,
                                             'Offset' : offset})):
-            print(' ' * 4,
-                  str(f),
-                  sep='', file=sys.stderr)
-            f.downloadFile(my_bs_api, download_directory, createBsDir=True)
+
+            print(dir(f))
+            print('Downloading file: {}'.format(f.Path),
+                  '...', sep=' ', end='', file=sys.stderr)
+
+            try:
+                f.downloadFile(my_bs_api, download_directory, createBsDir=True)
+
+                etag = f.getFileS3metadata(my_bs_api)['etag']
+
+                file_path = download_directory + '/' + f.Path
+                if len(etag) == 32:
+                    f_md5 = md5_hash(file_path)
+
+                    if f_md5 == etag:
+                        print(' done (md5 correct)!',
+                              file=sys.stderr)
+                    else:
+                        print(' error (md5 incorrect)!', f.Id,
+                              f.getFileS3metadata(my_bs_api)['etag'],
+                              f_md5,
+                              file=sys.stderr)
+
+                else:
+                    if f.Size == os.path.getsize(file_path):
+                        print(' done (file size correct)!',
+                              file=sys.stderr)
+                    else:
+                        print(' error (file size incorrect)!',
+                              f.Id, f.getFileS3metadata(my_bs_api)['etag'],
+                              file=sys.stderr)
+            except Exception as e:
+                print(' error ({})!!'.format(e),
+                      file=sys.stderr)
+
 
 if __name__ == '__main__':
     main()
