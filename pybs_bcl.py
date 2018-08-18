@@ -95,7 +95,6 @@ def main():
                               queryPars=qp({'Limit' : num_items,
                                             'Offset' : offset})):
 
-            print(dir(f))
             print('Downloading file: {}'.format(f.Path),
                   '...', sep=' ', end='', file=sys.stderr)
 
