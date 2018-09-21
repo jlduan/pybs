@@ -48,8 +48,8 @@ def main():
     parser.add_argument('-n', '--num_items', dest='num_items', required=False,
                         type=int,
                         default=10,
-                        help='specify the maximum number of items to return. \
-                              The default is 10')
+                        help='specify the maximum number of items to return \
+                              (max 1024). The default is 10')
 
     args = parser.parse_args()
 
@@ -111,8 +111,9 @@ def main():
                         print(' done (md5 correct)!',
                               file=sys.stderr)
                     else:
-                        print(' error (md5 incorrect)!', f.Id,
-                              f.getFileS3metadata(my_bs_api)['etag'],
+                        print(' error (md5 incorrect)!',
+                              f.Id,
+                              etag,
                               f_md5,
                               file=sys.stderr)
 
@@ -122,7 +123,8 @@ def main():
                               file=sys.stderr)
                     else:
                         print(' error (file size incorrect)!',
-                              f.Id, f.getFileS3metadata(my_bs_api)['etag'],
+                              f.Id,
+                              etag,
                               file=sys.stderr)
             except Exception as e:
                 print(' error ({})!!'.format(e),
