@@ -121,6 +121,7 @@ def main():
 
                     etag = f.getFileS3metadata(my_bs_api)['etag']
                     file_path = download_directory + '/' + file_path
+
                     if len(etag) == 32:
                         f_md5 = md5_hash(file_path)
 
@@ -129,10 +130,10 @@ def main():
                                   file=sys.stderr)
                         else:
                             print(' error (md5 incorrect)!',
-                                          f.Id,
-                                          etag,
-                                          f_md5,
-                                          file=sys.stderr)
+                                  f.Id,
+                                  etag,
+                                  f_md5,
+                                  file=sys.stderr)
 
                     else:
                         if f.Size == os.path.getsize(file_path):
